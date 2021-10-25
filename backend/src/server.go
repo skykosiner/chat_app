@@ -48,6 +48,9 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 
     ws, err := upgrader.Upgrade(w,r , nil);
 
+    // Make sure we close the connection when the function returns
+	defer ws.Close()
+
     clients[ws] = true
 
     fmt.Print(clients);

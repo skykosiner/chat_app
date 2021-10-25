@@ -1,9 +1,5 @@
 import { EventEmitter } from "events";
 
-/*import WebSocket from "ws";*/
-//TODO: Rewrite to work with browser and not need ws
-
-
 export type Message = {
     //source: "MESSAGE_USER"
     //type:  "SEND_MESSAGE"
@@ -46,11 +42,9 @@ export default class MessageClass extends EventEmitter {
 
     public async send(socket: WebSocket, item: Message) {
         const msgStr = JSON.stringify(item);
-        const buff = Buffer.from(msgStr);
-        console.log(buff.toString());
 
         waitForSocketConnection(socket, function() {
-            socket.send(buff);
+            socket.send(msgStr);
         })
     };
 
@@ -60,8 +54,8 @@ export default class MessageClass extends EventEmitter {
 
         socket.onmessage = (data) => {
             try {
-                const parsedData: Message = JSON.parse(data.toString());
-                console.log(parsedData);
+                const dataStr = data.data;
+                const parsedData: Message = JSON.parse(dataStr.toString());
 
                 this.emit("message", {
                     username: parsedData.data.user_name,
@@ -70,8 +64,8 @@ export default class MessageClass extends EventEmitter {
                     to_who: parsedData.data.to_who,
                 });
 
-            } catch (e: any) {
-                console.log("ERRROR", e.message, e.stack, data);
+            } catch (e) {
+                console.log("ERROR", e);
             };
         }
         socket.onerror = (error) => {
@@ -86,10 +80,10 @@ export default class MessageClass extends EventEmitter {
 async function test() {
     const q = await MessageClass.create();
     q.on("message", (e) => {
-        console.log(e);
+        console.log("q", e);
     })
     q.on("error", (e) => {
-        console.log(e);
+        console.log("q", e);
     });
 };
 

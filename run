@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+tmux neww "go run backend/src/server.go"
+tmux neww "cd frontend && npm run start"
