@@ -6,7 +6,7 @@ import MessageClass from 'utils/websocket';
 
 const App: React.FC = () => {
     const [messageSend, setMessageSend] = React.useState("");
-    const wsRef = React.useRef();
+    const wsRef = React.useRef<MessageClass>();
     const [isPaused, setPause] = React.useState(false);
 
     function shutUP() {
@@ -33,12 +33,10 @@ const App: React.FC = () => {
     };
 
 
-    //@ts-ignore
     React.useEffect(() => {
         async function connect(): Promise<void> {
             const ws = await MessageClass.create()
 
-            //@ts-ignore
             wsRef.current = ws;
         };
 
@@ -49,15 +47,13 @@ const App: React.FC = () => {
     React.useEffect(() => {
         if (!wsRef.current) return;
 
-        //@ts-ignore
-        wsRef.current.on("message", (e) => {
+        wsRef.current.on("message", (e: Event) => {
             if (isPaused) return;
             console.log(JSON.stringify(e, null, 4));
         });
     }, [isPaused]);
 
     function a() {
-        //@ts-ignore
         send(item);
     };
 

@@ -25,13 +25,11 @@ export function waitForSocketConnection(socket: WebSocket, callback: any){
     setTimeout(
         function () {
             if (socket.readyState === 1) {
-                console.log("Connection is made")
                 if (callback != null) {
                     callback();
                 };
             } else {
-                console.log("wait for connection...")
-                    waitForSocketConnection(socket, callback);
+                waitForSocketConnection(socket, callback);
             }
 
         }, 5); // wait 5 milisecond for the connection...
