@@ -1,16 +1,17 @@
 import { EventEmitter } from "events";
 
+import WebSocket from "ws";
+//TODO: Rewrite to work with browser and not need ws
 
-import * as WebSocket from "ws";
 
 export type Message = {
     //source: "MESSAGE_USER"
     //type:  "SEND_MESSAGE"
     data: {
-        user_name: string,
+        user_name: string | null,
         message: string,
-        time_sent: string
-        to_who: string
+        time_sent: string,
+        to_who: string | null
     };
 };
 
@@ -47,6 +48,22 @@ export default class MessageClass extends EventEmitter {
     private constructor(socket: WebSocket) {
         super();
 
+        socket.on("", (data: Buffer) => {
+            try {
+                const parsedData: Message = JSON.parse(data.toString());
+
+                this.emit("message", {
+                    username: parsedData.data.user_name,
+                    message: parsedData.data.message,
+                    time_sent: parsedData.data.to_who,
+                    to_who: parsedData.data.to_who,
+                });
+
+            } catch (e: any) {
+                console.log("ERRROR", e.message, e.stack, data);
+            }
+        });
+
         socket.on("message", (data: Buffer) => {
             try {
                 const parsedData: Message = JSON.parse(data.toString());
@@ -58,7 +75,7 @@ export default class MessageClass extends EventEmitter {
                     to_who: parsedData.data.to_who,
                 });
 
-            } catch (e) {
+            } catch (e: any) {
                 console.log("ERRROR", e.message, e.stack, data);
             }
         });

@@ -5,3 +5,6 @@
             * There can't be a duplicate name
             * So you can message a separately
 * Go backend (websockets)
+    * Keep each users name in a array
+        * If the name is entered in a go say no
+            * use that name to send messages to them

@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"fmt"
+    "fmt"
 	"log"
 	"net/http"
 
@@ -49,6 +49,8 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
     ws, err := upgrader.Upgrade(w,r , nil);
 
     clients[ws] = true
+
+    fmt.Print(clients);
 
     if err != nil {
         log.Println(err);
