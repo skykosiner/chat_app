@@ -1,7 +1,8 @@
+//HOW THE FUCK DOES THIS CODE WORK LOL
 import React from 'react';
 import { Message } from 'utils/websocket';
 import { send } from "utils/send";
-//import MessageClass from 'utils/websocket';
+import MessageClass from 'utils/websocket';
 
 const App: React.FC = () => {
     const [messageSend, setMessageSend] = React.useState("");
@@ -32,46 +33,32 @@ const App: React.FC = () => {
     };
 
 
+    //@ts-ignore
     React.useEffect(() => {
-        const ws = new WebSocket("ws://localhost:42069");
+        async function connect(): Promise<void> {
+            const ws = await MessageClass.create()
 
-        //@ts-ignore
-        wsRef.current = ws;
-
-        console.log("Attempting to connect to socket");
-
-        ws.onopen = () => {
-            console.log("Successfully connected");
+            //@ts-ignore
+            wsRef.current = ws;
         };
 
-        ws.close = (event) => {
-            console.log("Socket closed connection", event);
-        }
+        connect();
 
-        ws.onerror = (error) => {
-            console.log("Socket Error:", error);
-        };
-
-        ws.onmessage = (e) => {
-            console.log(e.data);
-        };
-
-    }, [])
+    }, []);
 
     React.useEffect(() => {
         if (!wsRef.current) return;
 
         //@ts-ignore
-        wsRef.current.onmessage = (e: any) => {
+        wsRef.current.on("message", (e) => {
             if (isPaused) return;
-            const message = JSON.parse(e.data);
-            console.log("e", message);
-        };
+            console.log(JSON.stringify(e, null, 4));
+        });
     }, [isPaused]);
 
     function a() {
         //@ts-ignore
-        send(wsRef.current, item);
+        send(item);
     };
 
     return (
@@ -85,6 +72,6 @@ const App: React.FC = () => {
             </button>
         </div>
    );
-}
+};
 
 export default App;

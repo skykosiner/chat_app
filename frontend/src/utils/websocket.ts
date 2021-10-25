@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 
-import WebSocket from "ws";
+/*import WebSocket from "ws";*/
 //TODO: Rewrite to work with browser and not need ws
 
 
@@ -21,36 +21,49 @@ export async function connectToChat(): Promise<WebSocket> {
     );
 };
 
+export function waitForSocketConnection(socket: WebSocket, callback: any){
+    setTimeout(
+        function () {
+            if (socket.readyState === 1) {
+                console.log("Connection is made")
+                if (callback != null) {
+                    callback();
+                };
+            } else {
+                console.log("wait for connection...")
+                    waitForSocketConnection(socket, callback);
+            }
+
+        }, 5); // wait 5 milisecond for the connection...
+}
+
 export default class MessageClass extends EventEmitter {
+
     static create(): Promise<MessageClass> {
-        return new Promise(async (res, rej) => {
+        return new Promise(async (res) => {
             const socket = await connectToChat();
-
-            function open() {
-                res(new MessageClass(socket));
-                socket.off("open", open);
-                socket.off("error", error);
-            };
-
-            function error(e: Error) {
-                rej(e);
-                socket.off("open", open);
-                socket.off("error", error);
-            };
-
-
-            socket.on("error", error);
-            socket.on("open", open);
-
+            res(new MessageClass(socket));
         });
     }
 
-    private constructor(socket: WebSocket) {
+    public async send(socket: WebSocket, item: Message) {
+        const msgStr = JSON.stringify(item);
+        const buff = Buffer.from(msgStr);
+        console.log(buff.toString());
+
+        waitForSocketConnection(socket, function() {
+            socket.send(buff);
+        })
+    };
+
+    constructor(socket: WebSocket) {
         super();
 
-        socket.on("", (data: Buffer) => {
+
+        socket.onmessage = (data) => {
             try {
                 const parsedData: Message = JSON.parse(data.toString());
+                console.log(parsedData);
 
                 this.emit("message", {
                     username: parsedData.data.user_name,
@@ -61,26 +74,13 @@ export default class MessageClass extends EventEmitter {
 
             } catch (e: any) {
                 console.log("ERRROR", e.message, e.stack, data);
-            }
-        });
-
-        socket.on("message", (data: Buffer) => {
-            try {
-                const parsedData: Message = JSON.parse(data.toString());
-
-                this.emit("message", {
-                    username: parsedData.data.user_name,
-                    message: parsedData.data.message,
-                    time_sent: parsedData.data.to_who,
-                    to_who: parsedData.data.to_who,
-                });
-
-            } catch (e: any) {
-                console.log("ERRROR", e.message, e.stack, data);
-            }
-        });
-
-        socket.on("error", this.emit.bind(this, "error"));
+            };
+        }
+        socket.onerror = (error) => {
+            this.emit("error", {
+                error: error,
+            });
+        };
     };
 };
 
@@ -88,7 +88,7 @@ export default class MessageClass extends EventEmitter {
 async function test() {
     const q = await MessageClass.create();
     q.on("message", (e) => {
-        console.log(JSON.stringify(e, null, 4));
+        console.log(e);
     })
     q.on("error", (e) => {
         console.log(e);
