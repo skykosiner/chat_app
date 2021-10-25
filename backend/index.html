@@ -3,22 +3,31 @@
       <h1>Hello, World</h1>
   </div>
   <script>
-      let socket = new WebSocket("ws://localhost:42069/ws");
+      let socket = new WebSocket("ws://localhost:42069");
 
       console.log("Attempting to connect to socket");
 
       socket.onopen = () => {
             console.log("Successfully connected");
             const mesageSend = {
-                source: "MESSAGE_USER",
-                type: "SEND_MESSAGE",
                 data: {
-                      user_name: "Yoni",
-                      message: "Hello, World!",
-                      time_sent: "69420",
-                  }
+                  user_name: "Yoni",
+                  message: "Hello, World!",
+                  time_sent: "69420",
+                }
             };
-                  socket.send(JSON.stringify(mesageSend));
+              socket.send(JSON.stringify(mesageSend));
+      };
+
+      function send(user_name, message) {
+        const mesageSend = {
+            data: {
+              user_name: "Yoni",
+              message: "Hello, World!",
+              time_sent: "69420",
+            }
+        };
+              socket.send(JSON.stringify(mesageSend));
       };
 
 
@@ -32,6 +41,6 @@
 
       socket.onmessage = (e) => {
             console.log(JSON.parse(e.data));
-      };
+      }
   </script>
 </html>

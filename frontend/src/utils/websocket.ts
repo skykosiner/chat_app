@@ -4,18 +4,19 @@ import { EventEmitter } from "events";
 import * as WebSocket from "ws";
 
 export type Message = {
-    source: "MESSAGE_USER"
-    type:  "SEND_MESSAGE"
+    //source: "MESSAGE_USER"
+    //type:  "SEND_MESSAGE"
     data: {
         user_name: string,
         message: string,
         time_sent: string
-    },
+        to_who: string
+    };
 };
 
 export async function connectToChat(): Promise<WebSocket> {
     return new WebSocket(
-        `ws://localhost:42069/ws`
+        `ws://localhost:42069`
     );
 };
 
@@ -46,36 +47,35 @@ export default class MessageClass extends EventEmitter {
     private constructor(socket: WebSocket) {
         super();
 
-        console.log("you good bro?");
-
-        socket.onmessage = (data: object) => {
-            console.log(data);
-            console.log("you good bro? 4");
-        };
-
         socket.on("message", (data: Buffer) => {
             try {
                 const parsedData: Message = JSON.parse(data.toString());
 
-                console.log(data);
-                console.log(parsedData);
+                this.emit("message", {
+                    username: parsedData.data.user_name,
+                    message: parsedData.data.message,
+                    time_sent: parsedData.data.to_who,
+                    to_who: parsedData.data.to_who,
+                });
+
             } catch (e) {
                 console.log("ERRROR", e.message, e.stack, data);
             }
         });
 
         socket.on("error", this.emit.bind(this, "error"));
-    }
-}
+    };
+};
 
 
 async function test() {
-    console.log("you good bro? number 2");
     const q = await MessageClass.create();
     q.on("message", (e) => {
-        console.log(JSON.parse(e.data));
-        console.log("you good bro? number 3");
+        console.log(JSON.stringify(e, null, 4));
     })
+    q.on("error", (e) => {
+        console.log(e);
+    });
 };
 
 if (require.main === module) {
