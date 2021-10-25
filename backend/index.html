@@ -1,0 +1,37 @@
+<html>
+  <div>
+      <h1>Hello, World</h1>
+  </div>
+  <script>
+      let socket = new WebSocket("ws://localhost:42069/ws");
+
+      console.log("Attempting to connect to socket");
+
+      socket.onopen = () => {
+            console.log("Successfully connected");
+            const mesageSend = {
+                source: "MESSAGE_USER",
+                type: "SEND_MESSAGE",
+                data: {
+                      user_name: "Yoni",
+                      message: "Hello, World!",
+                      time_sent: "69420",
+                  }
+            };
+                  socket.send(JSON.stringify(mesageSend));
+      };
+
+
+      socket.close = (event) => {
+            console.log("Socket closed connection", event);
+      }
+
+      socket.onerror = (error) => {
+            console.log("Socket Error:", error);
+      };
+
+      socket.onmessage = (e) => {
+            console.log(JSON.parse(e.data));
+      };
+  </script>
+</html>
