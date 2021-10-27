@@ -22,7 +22,7 @@ const App: React.FC = () => {
         return currentTime;
     };
 
-    localStorage.setItem("to_who", "");
+    localStorage.setItem("to_who", "all");
 
     const item: Message = {
         data: {
@@ -48,10 +48,10 @@ const App: React.FC = () => {
     React.useEffect(() => {
         if (!wsRef.current) return;
 
-        wsRef.current.on("message", (e: Event) => {
+        wsRef.current.on("message", (e: Message) => {
             if (isPaused) return;
+            console.log(e);
             const data = e;
-            console.log("Javascript only works if I console.log here? fuck you javascript");
             //@ts-ignore
             // eslint-disable-next-line
             setData(`${data.username}:` + ` ${data.message}`);
@@ -64,8 +64,8 @@ const App: React.FC = () => {
 
     return (
         <div>
-            <input onChange={(e) => setMessageSend(e.target.value)} />
             <input onChange={(e) => setName(e.target.value)} />
+            <input onChange={(e) => setMessageSend(e.target.value)} />
             {/*@ts-ignore*/}
             <button onClick={a}> SEND MESSAGE</button>
             <button onClick={shutUP}>DON'T PRESS</button>

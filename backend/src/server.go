@@ -9,6 +9,7 @@ import (
 )
 
 var clients = make(map[*websocket.Conn]bool)
+var broadcast = make(chan Message)
 
 type Message struct {
     user_name string;
@@ -24,23 +25,19 @@ var upgrader = websocket.Upgrader{
 
 func reader(conn *websocket.Conn) {
     for {
-        messageType, p, err := conn.ReadMessage();
-
-        if err != nil {
-            log.Println(err);
-            return;
-        };
-
-        log.Println(p);
-
+        // Grab the next message from the broadcast channel
+        msg := <-broadcast
+        log.Print(msg);
+        // Send it out to every client that is currently connected
         for client := range clients {
-            if err := client.WriteMessage(messageType, p); err != nil {
-                log.Println(err);
-            };
-        };
-
-
-    };
+            err := client.WriteJSON(msg)
+            if err != nil {
+                log.Printf("error: %v", err)
+                client.Close()
+                delete(clients, client)
+            }
+        }
+    }
 };
 
 func wsEndpoint(w http.ResponseWriter, r *http.Request) {
@@ -52,6 +49,19 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 	defer ws.Close()
 
     clients[ws] = true
+
+    for {
+		var msg Message
+		// Read in a new message as JSON and map it to a Message object
+		err := ws.ReadJSON(&msg)
+		if err != nil {
+			log.Printf("error: %v", err)
+			delete(clients, ws)
+			break
+		}
+		// Send the newly received message to the broadcast channel
+		broadcast <- msg
+    }
 
     fmt.Print(clients);
 
